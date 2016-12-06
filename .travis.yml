@@ -1,0 +1,21 @@
+language: go
+go: 1.7
+sudo: false
+git:
+  depth: 100
+install:
+  - go get -insecure -t -v ./...
+  - go get bitbucket.org/liamstask/goose/cmd/goose
+before_script:
+  - psql --version
+  - goose up
+script:
+  - go test -v ./...
+  - for i in $(seq 1 $(goose dbversion | awk '{ print $3 }')); do goose down; downcode=$?; done && [[ $downcode == 0 ]]
+addons:
+  postgresql: "9.5"
+services: postgresql
+notifications:
+  email:
+    on_success: change
+    on_failure: always
